@@ -1,5 +1,5 @@
 # PiDMS
-Some scripts and configs for my Raspberry Pi based DMS setup
+Some scripts and configs for my Raspberry Pi based document managament system (DMS) and personal finance manager setup
 
 ## Setup
 The Pi runs docker containers for [paperless](https://github.com/the-paperless-project/paperless) and [Firefly III](https://github.com/firefly-iii/firefly-iii)
