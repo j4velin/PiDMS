@@ -24,4 +24,4 @@ The Pi runs docker containers for [paperless](https://github.com/the-paperless-p
 * already OCR'ed pdfs can be moved to the `/home/pi/paperless.consume` folder directly
 * offline documents:
   * via scanner: call `http://<ip>/<count>` where *count* is the number of pages to scan
-  * via smartphone document scanner (for exmaple [ScanPro](https://play.google.com/store/apps/details?id=net.doo.snap)): upload to `/home/pi/scaninput
+  * via smartphone document scanner (for exmaple [ScanPro](https://play.google.com/store/apps/details?id=net.doo.snap)): upload to `/home/pi/scaninput`
