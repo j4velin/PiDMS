@@ -12,6 +12,8 @@ The Pi runs docker containers for [paperless](https://github.com/the-paperless-p
 - scanserver.py -> allows executing the scan.sh script with a HTTP GET request
 
 ## Crontabs
+```
 @reboot /home/pi/ocr.sh &
 @reboot /home/pi/fan_control.py &
 @reboot /home/pi/scanserver.py &
+```
