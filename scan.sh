@@ -7,8 +7,10 @@ cd /home/pi/scans
 if [ $count -gt 1 ]; then
 	scanimage --batch=scan_%d.tiff --batch-count=$count --format=tiff --resolution $resolution --mode Gray
 	resultcode=$?
-	tiffcp scan_* scan.tiff
-	rm scan_*
+	if [ $resultcode -eq 0 ]; then
+		tiffcp scan_* scan.tiff
+		rm scan_*
+	fi
 else
 	scanimage --format=tiff --resolution $resolution --mode Gray >scan.tiff
 	resultcode=$?
