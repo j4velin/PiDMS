@@ -7,9 +7,22 @@ import datetime
 
 http_server = Flask(__name__)
 
+scan = None
+
+@http_server.route('/next', methods=['GET'])
+def next():
+    if scan is not None:
+        scan.stdin.write(b'\n')
+        scan.stdin.flush()
+    return "Ok"
+
+
 @http_server.route('/<int:count>', methods=['GET'])
-def scan(count):
-    scan = subprocess.Popen('/home/pi/scan.sh ' + str(count) + ' 2>&1', stdout=subprocess.PIPE, shell=True)
+def doScan(count):
+    global scan
+    scan = subprocess.Popen('/root/scan.sh ' + str(count), stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
+    if count > 1:
+        return scan.stdout.readline()
     out, err = scan.communicate()
     if scan.returncode == 0:
         return "scanned " + str(count) + " pages"
