@@ -4,11 +4,15 @@ from flask import Flask
 import datetime
 import subprocess
 import threading
+import time
 
 http_server = Flask(__name__)
 
 SCAN_SCRIPT = '/root/scan.sh'
 LOGFILE = '/tmp/scan.log'
+
+# How long a new job waits for the previous one to get out of the way before giving up on it.
+SETTLE_SECONDS = 30
 
 # The most recently started scan job, or None. A multi-page job runs `scanimage --batch-prompt`,
 # which waits for a newline on its stdin before every sheet; /next is what writes that newline.
@@ -33,10 +37,31 @@ def nextPage():
         try:
             scan.stdin.write(b'\n')
             scan.stdin.flush()
-        except (IOError, OSError) as e:
-            # The job ended between the poll above and the write.
+        except (IOError, OSError, ValueError) as e:
+            # The job ended, or was given up on, between the poll above and the write.
             return 'could not reach the scan job: %s' % e, 500
     return 'Ok'
+
+
+def reclaim(job):
+    """Gets a still-running job out of the way, and reports whether that worked.
+
+    Its sheets land on fixed filenames in one directory, so two jobs at once would eat each
+    other's pages - but by the time the last /next is answered the job still has to scan that
+    sheet and convert them all, which is a long time to refuse the next scan for. So wait for it.
+
+    Closing its stdin is the way out of a batch prompt that scanimage documents as Ctrl + D, so a
+    job abandoned halfway through its sheets ends here too, rather than holding the scanner until
+    someone restarts this server. One that is merely converting ignores it and takes its moment.
+    """
+    try:
+        job.stdin.close()
+    except (IOError, OSError, ValueError):
+        pass
+    deadline = time.time() + SETTLE_SECONDS
+    while job.poll() is None and time.time() < deadline:
+        time.sleep(0.2)
+    return job.poll() is not None
 
 
 @http_server.route('/<int:count>', methods=['GET'])
@@ -46,8 +71,8 @@ def doScan(count):
         return 'page count must be at least 1', 400
 
     with lock:
-        if scan is not None and scan.poll() is None:
-            return 'a scan job is already running', 409
+        if scan is not None and scan.poll() is None and not reclaim(scan):
+            return 'the previous scan job is still running', 409
 
         if count > 1:
             # A multi-page job is fed sheet by sheet by /next, so this must not wait for it: those
