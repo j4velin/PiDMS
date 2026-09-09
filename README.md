@@ -24,4 +24,5 @@ The Pi runs docker containers for [paperless](https://github.com/the-paperless-p
 * already OCR'ed pdfs can be moved to the `/home/pi/paperless.consume` folder directly
 * offline documents:
   * via scanner: call `http://<ip>:8080/<count>` where *count* is the number of pages to scan (or use the [Android client app](https://github.com/j4velin/ScanClient))
+    * for more than one page, follow it with one `http://<ip>:8080/next` call per sheet: `scanimage --batch-prompt` waits for each of those before pulling the next sheet, so the `/<count>` request returns once the job has *started*, not once it has finished
   * via smartphone document scanner (for exmaple [ScanPro](https://play.google.com/store/apps/details?id=net.doo.snap)): upload to `/home/pi/scaninput`
